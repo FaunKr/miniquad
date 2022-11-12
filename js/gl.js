@@ -1256,6 +1256,7 @@ var importObject = {
             window.requestAnimationFrame(animation);
         },
 
+        
         fs_load_file: function (ptr, len) {
             var url = UTF8ToString(ptr, len);
             var file_id = FS.unique_id;
@@ -1263,18 +1264,16 @@ var importObject = {
             var xhr = new XMLHttpRequest();
             xhr.open('GET', url, true);
             xhr.responseType = 'arraybuffer';
-            xhr.onload = function (e) {
-                if (this.status == 200) {
-                    var uInt8Array = new Uint8Array(this.response);
-
-                    FS.loaded_files[file_id] = uInt8Array;
-                    wasm_exports.file_loaded(file_id);
-                }
+            xhr.onreadystatechange=function() {
+                if (this.readyState === 4){
+                    if(this.status === 200){  
+                        var t = new Uint8Array(this.response);
+                        (FS.loaded_files[s] = t), wasm_exports.file_loaded(s);
+                    } else {
+                        (FS.loaded_files[s] = null), wasm_exports.file_loaded(s);
+                    }
+                } 
             }
-            xhr.onerror = function (e) {
-                FS.loaded_files[file_id] = null;
-                wasm_exports.file_loaded(file_id);
-            };
 
             xhr.send();
 
